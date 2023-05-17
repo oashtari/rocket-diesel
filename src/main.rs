@@ -1,7 +1,28 @@
 use rocket::serde::json::Json;
 use rocket::serde::{Serialize, Deserialize};
+use rocket::State;
+use rocket::fairing::AdHoc;
+
 
 #[macro_use] extern crate rocket;
+
+// In Rocket, configurations are Managed States, which you can retrieve via &State<T>. 
+// Here, we are trying to use the Config values in a GET endpoint by using &State<Config>.
+
+#[derive(Deserialize)]
+struct Config {
+    name: String,
+    age: u8,
+}
+
+// THE GETS
+
+#[get("/config")]
+fn get_config(config: &State<Config>) -> String {
+    format!(
+        "Hello, {}! You are {} years old.", config.name, config.age
+    )
+}
 
 #[get("/")]
 fn index() -> &'static str {
@@ -50,12 +71,21 @@ fn get_blog_posts() -> Json<Vec<BlogPost>> {
     ])
 }
 
+// THE POSTS
+
+#[post("/", data = "<blog_post>")]
+fn create_blog_post(blog_post: Json<BlogPost>) -> Json<BlogPost> {
+    blog_post
+}
+
+
 #[launch]
 fn rocket() -> _ {
     let rocket = rocket::build();
     rocket
-        .mount("/", routes![index])
-        .mount("/blog-posts", routes![get_random_blog_post, get_blog_post, get_blog_posts])
+        .attach(AdHoc::config::<Config>())
+        .mount("/", routes![index, get_config])
+        .mount("/blog-posts", routes![get_random_blog_post, get_blog_post, get_blog_posts, create_blog_post])
 }
 
 #[derive(Serialize, Deserialize)]
