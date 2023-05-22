@@ -1,10 +1,11 @@
+#[macro_use] extern crate rocket;
+#[macro_use] extern crate diesel;
+
 use rocket::serde::json::Json;
 use rocket::serde::{Serialize, Deserialize};
 use rocket::State;
 use rocket::fairing::AdHoc;
-
-
-#[macro_use] extern crate rocket;
+use diesel::{Insertable, Queryable, table};
 
 // In Rocket, configurations are Managed States, which you can retrieve via &State<T>. 
 // Here, we are trying to use the Config values in a GET endpoint by using &State<Config>.
